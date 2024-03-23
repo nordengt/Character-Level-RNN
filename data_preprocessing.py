@@ -14,11 +14,8 @@ def get_category_names(filename: str, letters: str, encoding: str = "utf-8") -> 
 
 def get_data(path: str, letters: str) -> Dict[str, List[str]]:
     files = glob.glob(path)
-    
     category_dict = {}
-    
     for filename in files:
         category = filename.split("\\")[-1].split('.')[0]
         category_dict[category] = get_category_names(filename, letters)
-    
     return category_dict

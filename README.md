@@ -1,1 +1,1 @@
-# RNN-Implementation
+# Character-Level-RNN
