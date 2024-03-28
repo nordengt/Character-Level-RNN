@@ -1,77 +1,79 @@
+import argparse
+
 import string
 import random
 
 import torch
 from torch import nn
-import torch.nn.functional as F
 
-import tqdm
+from tqdm import tqdm
 
-from model import RNN 
-from data_preprocessing import get_data  
+from data_preprocessing import get_data
+from model import RNN, T_RNN
+from utils import output_category, plot_losses, name_to_tensor
 
 path = "./data/names/*.txt"
 letters = string.ascii_letters + " .,;'"
-category_dict = get_data(path, letters)
-categories = list(category_dict.keys())
-n_letters = len(letters)
-n_categories = len(categories)
-hidden_dim = 128
 
-def category_from_output(output):
-    _, top_i = output.data.topk(1)
-    category_i = top_i[0][0]
-    return categories[category_i], category_i
+category_name_dict, categories, n_letters, n_categories = get_data(path, letters)
+n_hidden = 128
 
-def name_to_tensor(name: str) -> torch.Tensor:
-    tensor = torch.zeros(len(name), 1, n_letters)
-    for i, char in enumerate(name):
-        tensor[i, 0, letters.index(char)] = 1
-    return tensor
+def random_choice(cat_list: list) -> str:
+    return cat_list[random.randint(0, len(cat_list)-1)]
 
-def random_training_pair():
-    category = random.choice(categories)
-    name = random.choice(category_dict[category])
+def random_sample():
+    category = random_choice(categories)
+    name = random_choice(category_name_dict[category])
     category_tensor = torch.tensor([categories.index(category)], dtype=torch.long)
-    name_tensor = name_to_tensor(name)
-    return category, name, category_tensor, name_tensor
+    name_tensor = name_to_tensor(name, letters, n_letters)
+    return name_tensor, category_tensor, name, category
 
-def main():
-    model = RNN(input_dim=n_letters, hidden_dim=hidden_dim, output_dim=n_categories)
-        
+def main(model_type: str = "scratch") -> None:
+    if model_type == "pytorch":
+        model = T_RNN(n_letters, n_hidden, n_categories)
+    else:
+        model = RNN(n_letters, n_hidden, n_categories)
+    
     loss_fn = nn.CrossEntropyLoss()
-    lr = 5e-3  
-    optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9)
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    lr = 0.005
+    optimizer = torch.optim.SGD(model.parameters(), lr=lr)
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    iterations = 100_000
 
-    epochs = 100000
+    losses = []
+    current_loss = 0
 
     model.to(device)
-    losses = []
-    epoch_bar = tqdm.tqdm(desc="Training", total=epochs, position=0)
-
-    for epoch in range(1, epochs+1):  
-        category, name, category_tensor, name_tensor = random_training_pair()
-        category_tensor, name_tensor = category_tensor.to(device), name_tensor.to(device)
+    model.train()
+    for iteration in tqdm(range(1, iterations+1)):
+        name_tensor, category_tensor, name, category = random_sample()
         
         hidden = model.init_hidden().to(device)
-        
+        name_tensor, category_tensor = name_tensor.to(device), category_tensor.to(device)
+
         for i in range(name_tensor.shape[0]):
             output, hidden = model(name_tensor[i], hidden)
-        loss = loss_fn(F.softmax(output, dim=1), category_tensor)
-        
+
+        loss = loss_fn(output, category_tensor)
+        current_loss += loss.item()
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
 
-        losses.append(loss.item())
+        if iteration % 5000 == 0:
+            out_cat = output_category(output, categories)
+            result = "Correct" if out_cat == category else "Incorrect"
+            print(f"\n Name: {name.ljust(20)} Actual: {category.ljust(20)} Predicted: {out_cat.ljust(20)} Result: {result}")
+        
+        if iteration % 1000 == 0:
+            losses.append(current_loss / 1000)
+            current_loss = 0
 
-        if epoch % 5000 == 0:
-            guess, _ = category_from_output(output)
-            verdict = "✔" if guess == category else "❌"
-            print(f"\nEpoch: {epoch} | Loss: ({loss:.4f}) | Name: {name} | Guess: {guess} | Correct: {category} | Verdict: {verdict}")
-
-        epoch_bar.update()
+    torch.save(model.state_dict(), f"./saved/{model_type}_model.pth")
+    plot_losses(losses, f"./results/{model_type}.png")
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description="Train Script")
+    parser.add_argument("--model_type", type=str, default="scratch")
+    args = parser.parse_args()
+    main(args.model_type)
