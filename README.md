@@ -5,6 +5,13 @@ Character Level RNN feeds the text character-by-character (individual letter) in
 - [Classification](#classification)
 - [Generation](#generation)
 
+## Recurrent Neural Network
+
+**a. RNN Cell**
+<img src="./images/rnn1.png" alt="RNN Cell" style="width:100%;">
+
+**b. RNN**
+<img src="./images/rnn2.png" alt="RNN" style="width:100%;">
 
 ## Classification
 
@@ -25,24 +32,6 @@ python train_c.py
 python train_c.py --model_type pytorch
 ```
 
-### Evaluate
-
-For evaluating both type of network, we can use following scripts.
-
-**a. Scratch RNN**
-
-```python
-python evaluate_c.py --name Najjar
-```
-```Output: The name Najjar is: Arabic```
-
-**b. PyTorch RNN**
-
-```python
-python evaluate_c.py --name Palmeiro --model_type pytorch
-```
-```Output: The name Palmeiro is: Portuguese```
-
 ### Results
 
 The training results of the run for 100_000 iterations is shown below.
@@ -53,6 +42,48 @@ The training results of the run for 100_000 iterations is shown below.
 **b. PyTorch RNN**
 <img src="results/pytorch-classification.png" alt="PyTorch Classification RNN" style="width:100%;">
 
+### Evaluate
+
+For evaluating both type of network, we can use following scripts.
+
+**a. Scratch RNN**
+
+```python
+python evaluate.py --name Najjar
+```
+`Output: The name Najjar is: Arabic`
+
+**b. PyTorch RNN**
+
+```python
+python evaluate.py --name Palmeiro --model_type pytorch
+```
+`Output: The name Palmeiro is: Portuguese`
+
 
 ## Generation
 
+For classification, I've written [model_g.py](./model_g.py) which builts upon the RNN of classification.
+
+### Training
+
+The model can be trained by running script:
+
+```python
+python model_g.py
+```
+
+### Results
+
+The training results of the run for 100_000 iterations is shown below.
+
+<img src="results/generation.png" alt="PyTorch Generation RNN" style="width:100%;">
+
+### Generate
+
+For generating the name, run following script.
+
+```python
+python generate.py --country Russian --start R
+```
+`Output: The generated Russian name is Rovakov`
