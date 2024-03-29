@@ -1,6 +1,5 @@
 import torch
 from torch import nn, Tensor
-import torch.nn.functional as F
 
 class RNN(nn.Module):
     def __init__(self, input_dim: int, hidden_dim: int, output_dim: int) -> None:

@@ -70,7 +70,7 @@ def main(model_type: str = "scratch") -> None:
             current_loss = 0
 
     torch.save(model.state_dict(), f"./saved/{model_type}_model.pth")
-    plot_losses(losses, f"./results/{model_type}.png")
+    plot_losses(losses, f"./results/{model_type}-classification.png")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Train Script")
