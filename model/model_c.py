@@ -11,7 +11,7 @@ class RNN(nn.Module):
     def init_hidden(self):
         return torch.zeros(1, self.hidden_dim)
 
-    def forward(self, x: Tensor, h: Tensor = None) -> Tensor:
+    def forward(self, x: Tensor, h: Tensor) -> Tensor:
         combined = torch.cat((x, h), 1)
         hidden = self.i2h(combined)
         output = self.i2o(combined)
