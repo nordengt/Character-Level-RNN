@@ -1,4 +1,4 @@
-# Character-Level-RNN
+# Character-Level-RNN-Classification
 
 Character Level RNN feeds the name character-by-character (individual letter) into the RNN and predicts the category of the name. In [model.py](./model.py), I've written two models: `RNN` model which is a somewhat scratch model and `T_RNN` model which uses PyTorch's built in RNN.
 
