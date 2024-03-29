@@ -5,7 +5,7 @@ Character Level RNN feeds the text character-by-character (individual letter) in
 - [Classification](#classification)
 - [Generation](#generation)
 
-This projects are based upon following tutorials:
+These projects are based upon following tutorials:
 - https://pytorch.org/tutorials/intermediate/char_rnn_classification_tutorial.html
 - https://pytorch.org/tutorials/intermediate/char_rnn_generation_tutorial.html
 
